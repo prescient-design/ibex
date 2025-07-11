@@ -1,0 +1,77 @@
+
+[project]
+name = "prescient-ibex"
+description = "Lightweight antibody structure prediction tool"
+authors = [{name = "Prescient Design"}]
+dynamic = ["version", "readme"]
+requires-python = ">=3.10"
+dependencies = [
+    "boto3==1.35.88",
+    "click<8.2.0",
+    "dm-tree",
+    "einops",
+    "esm==3.1.6",
+    "hydra-core",
+    "levenshtein",
+    "lightning==2.5.0.post0",
+    "loguru>=0.7.3",
+    "ml-collections>=1.0.0",
+    "numpy==1.26.4",
+    "omegaconf>=2.3.0",
+    "openmm>=8.2.0",
+    "pandas==2.2.3",
+    "pdbfixer",
+    "pyparsing>=3.2.3",
+    "python-box>=7.3.2",
+    "s3fs==2025.2.0",
+    "scipy==1.10.1",
+    "sentencepiece",
+    "torch==2.5.1",
+    "tqdm",
+    "transformers",
+    "typer>=0.15.2",
+    "wandb==0.19.8",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"ibex.configs" = ["**/*.yaml"]
+
+[tool.setuptools.dynamic]
+readme = {file = "README.md"}
+
+[project.scripts]
+ibex = "ibex.inference:app"
+
+[project.optional-dependencies]
+analysis = [
+    "matplotlib>=3.10.1",
+    "py3dmol>=2.4.2",
+    "seaborn>=0.13.2",
+]
+
+[build-system]
+requires = ["setuptools >= 65", "setuptools_scm[toml]>=6.2"]
+build-backend = 'setuptools.build_meta'
+
+[dependency-groups]
+dev = [
+    "coverage[toml]>=7.8.0",
+    "ipykernel>=6.29.5",
+    "ipython>=8.35.0",
+    "pip>=25.0.1",
+    "pre-commit>=4.2.0",
+    "pytest>=8.3.5",
+    "ruff>=0.11.5",
+]
+
+[tool.setuptools_scm]
+search_parent_directories = true
+version_scheme = "no-guess-dev"
+local_scheme = "node-and-date"
+fallback_version = "0.0.1"
+
+[tool.uv.sources]
+pdbfixer = { git = "https://github.com/openmm/pdbfixer.git" }
