@@ -39,7 +39,7 @@ where = ["src"]
 "ibex.configs" = ["**/*.yaml"]
 
 [tool.setuptools.dynamic]
-readme = {file = "README.md"}
+readme = {file = "README.md", content-type = "text/markdown"}
 
 [project.scripts]
 ibex = "ibex.inference:app"
