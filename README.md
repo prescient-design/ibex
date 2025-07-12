@@ -21,7 +21,7 @@ uv pip install -e .
 
 ## Usage
 
-The simplest way to run inference with a pretrained model is through the `ibex` command, e.g.
+The simplest way to run inference is through the `ibex` command, e.g.
 
 ```bash
 ibex --fv-heavy EVQLVESGGGLVQPGGSLRLSCAASGFNIKDTYIHWVRQAPGKGLEWVARIYPTNGYTRYADSVKGRFTISADTSKNTAYLQMNSLRAEDTAVYYCSRWGGDGFYAMDYWGQGTLVTVSS --fv-light DIQMTQSPSSLSASVGDRVTITCRASQDVNTAVAWYQQKPGKAPKLLIYSASFLYSGVPSRFSGSRSGTDFTLTISSLQPEDFATYYCQQHYTTPPTFGQGTKVEIK --output prediction.pdb
@@ -36,7 +36,7 @@ By default, structures are predicted in the holo conformation. To predict the ap
 
 To run a refinement step on the predicted structures, use the `--refine` option. Additional checks to fix cis-isomers and D-stereoisomers during refinement can be activated with `--refine-checks`.
  
-Instead of running Ibex, you can use `--abodybuilder3` to run inference with the [ABodyBuilder3](https://arxiv.org/abs/2405.20863) model. 
+Instead of running Ibex, you can use `--abodybuilder3` to run inference with the [ABodyBuilder3](https://academic.oup.com/bioinformatics/article/40/10/btae576/7810444) model. 
 
 To run Ibex programmatically, you can use
 ```python
@@ -45,6 +45,7 @@ ckpt = checkpoint_path("ibex")
 ibex_model = Ibex.load_from_ensemble_checkpoint(ckpt)
 inference(ibex_model, fv_heavy, fv_light, "prediction.pdb")
 ```
+to predict structures for multiple sequence pairs, `batch_inference` is recommended instead of `inference`.
 
 ## Predictions on nanobodies and TCRs
 
@@ -54,7 +55,7 @@ For inference on TCRs, you should provide the variable beta chain sequence as `f
 
 
 ## License
-The codebase and the [ABodyBuilder3](https://arxiv.org/abs/2405.20863) model weights are available under [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0). 
+The codebase and the [ABodyBuilder3](https://academic.oup.com/bioinformatics/article/40/10/btae576/7810444) model weights are available under [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0). 
 
 The [model weights](https://doi.org/10.5281/zenodo.15866555) for Ibex are available under [Genentech Apache 2.0 Non-Commercial license](https://github.com/prescient-design/ibex/blob/main/docs/Genentech_license_weights_ibex).
 
