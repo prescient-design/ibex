@@ -1,7 +1,7 @@
 
 [project]
 name = "prescient-ibex"
-description = "Lightweight antibody structure prediction tool"
+description = "Lightweight antibody structure prediction tool (arXiv:2507.09054)"
 authors = [{name = "Prescient Design"}]
 dynamic = ["version", "readme"]
 requires-python = ">=3.10"

@@ -1,9 +1,11 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15866555.svg)](https://doi.org/10.5281/zenodo.15866555)
+
 # Ibex 🐐
 
-Ibex is a lightweight antibody and TCR structure prediction model.
+[Ibex](https://arxiv.org/abs/2507.09054) is a lightweight antibody and TCR structure prediction model.
 
 <p align="center">
-<img src="docs/assets/ibex.png" width=400px>
+<img src="https://raw.githubusercontent.com/prescient-design/ibex/refs/heads/main/docs/assets/ibex.png" width=400px>
 </p>
 
 ## Installation
@@ -55,18 +57,39 @@ For inference on TCRs, you should provide the variable beta chain sequence as `f
 
 
 ## License
-The codebase and the [ABodyBuilder3](https://academic.oup.com/bioinformatics/article/40/10/btae576/7810444) model weights are available under [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0). 
+The Ibex codebase is available under an [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0), and the [ABodyBuilder3](https://doi.org/10.5281/zenodo.11354576) model weights under a [Creative Commons Attribution 4.0 International license](https://creativecommons.org/licenses/by/4.0/legalcode), both of which allow for commercial use.
 
-The [model weights](https://doi.org/10.5281/zenodo.15866555) for Ibex are available under [Genentech Apache 2.0 Non-Commercial license](https://github.com/prescient-design/ibex/blob/main/docs/Genentech_license_weights_ibex).
+The [Ibex model weights](https://doi.org/10.5281/zenodo.15866555) are available under a [Genentech Apache 2.0 Non-Commercial license](https://raw.githubusercontent.com/prescient-design/ibex/refs/heads/main/docs/Genentech_license_weights_ibex), which allows its use for non-commercial academic research purposes.
 
 Ibex uses as input representation embeddings from ESMC 300M, which is licensed under the [EvolutionaryScale Cambrian Open License Agreement](https://www.evolutionaryscale.ai/policies/cambrian-open-license-agreement).
 
 ## Citation
-If this code is useful to you please cite our paper using the following bibtex entry,
+When using Ibex in your work, please cite the following paper
 
 ```bibtex
-@article{ibex,
-    author = {Dreyer et al.},
-    title = "{Conformation-Aware Structure Prediction of Antigen-Recognizing Immune Proteins}",
-    year = {2025},
+@misc{ibex,
+      title={Conformation-Aware Structure Prediction of Antigen-Recognizing Immune Proteins},
+      author={Frédéric A. Dreyer and Jan Ludwiczak and Karolis Martinkus and Brennan Abanades and Robert G. Alberstein and Pan Kessel and Pranav Rao and Jae Hyeon Lee and Richard Bonneau and Andrew M. Watkins and Franziska Seeger},
+      year={2025},
+      eprint={2507.09054},
+      archivePrefix={arXiv},
+      primaryClass={q-bio.BM},
+      url={https://arxiv.org/abs/2507.09054},
 }
+```
+
+If you use the ABodyBuilder3 model weights, you should also cite
+```bibtex
+@article{abodybuilder3,
+    author = {Kenlay, Henry and Dreyer, Frédéric A and Cutting, Daniel and Nissley, Daniel and Deane, Charlotte M},
+    title = "{ABodyBuilder3: improved and scalable antibody structure predictions}",
+    journal = {Bioinformatics},
+    volume = {40},
+    number = {10},
+    pages = {btae576},
+    year = {2024},
+    month = {10},
+    issn = {1367-4811},
+    doi = {10.1093/bioinformatics/btae576}
+}
+```
