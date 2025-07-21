@@ -19,7 +19,7 @@ dependencies = [
     "omegaconf>=2.3.0",
     "openmm>=8.2.0",
     "pandas==2.2.3",
-    "pdbfixer",
+    "black-pdbfixer",
     "pyparsing>=3.2.3",
     "python-box>=7.3.2",
     "s3fs==2025.2.0",
