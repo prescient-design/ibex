@@ -109,24 +109,33 @@ def inference(
     save_all = False,
     refine: bool = False,
     refine_checks: bool = False,
-    apo: bool = False
+    apo: bool = False,
+    return_pdb: bool = True
 ):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if device == "cpu" and logging:
         logger.warning("Inference is being done on CPU as GPU not found.")
     if save_all==True and not isinstance(model.model, EnsembleStructureModule):
-        logger.warning("save_all is set to True but model is not an ensemble model.")
+        raise ValueError("save_all is set to True but model is not an ensemble model.")
+    if return_pdb==False and refine:
+        raise ValueError("Cannot return a protein object and refine at the same time. To run refinement, output format must be a PDB file (return_pdb==True).")
+    if return_pdb==False and save_all:
+        raise ValueError("Cannot return a protein object and save all outputs at the same time. To save all, output format must be a PDB file (return_pdb==True).")
     with torch.no_grad():
-        pdb_string = model.predict(fv_heavy, fv_light, device=device, ensemble=save_all, apo=apo)
+        pdb_string_or_protein = model.predict(fv_heavy, fv_light, device=device, ensemble=save_all, pdb_string=return_pdb, apo=apo)
+        if not return_pdb:
+            if logging:
+                logger.warning("Inference complete. Returning a protein object.")
+                return pdb_string_or_protein
         if save_all:
             ensemble_files = []
-            for i, pdb_string_current in enumerate(pdb_string):
+            for i, pdb_string_current in enumerate(pdb_string_or_protein):
                 output_file_current = output_file.parent / f"{output_file.stem}_{i+1}{output_file.suffix}"
                 process_file(pdb_string_current, output_file_current, refine, refine_checks)
                 ensemble_files.append(str(output_file_current))
             output_file = ensemble_files
         else:
-            process_file(pdb_string, output_file, refine, refine_checks)
+            process_file(pdb_string_or_protein, output_file, refine, refine_checks)
     if logging:
         logger.info(f"Inference complete. Wrote PDB file to {output_file=}")
     return output_file
@@ -142,7 +151,8 @@ def batch_inference(
     logging: bool = True,
     refine: bool = False,
     refine_checks: bool = False,
-    apo_list: bool = None
+    apo_list: bool = None,
+    return_pdb: bool = True
 ):
     if output_names is None:
         output_names = [f"output_{i}" for i in range(len(fv_heavy_list))]
@@ -154,12 +164,13 @@ def batch_inference(
     if device == "cpu" and logging:
         logger.warning("Inference is being done on CPU as GPU not found.")
 
+    output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     if apo_list is not None and not model.conformation_aware:
         raise ValueError("Model is not conformation-aware, but apo_list was provided.")
-    elif apo_list is None and model.conformation_aware:
-        raise ValueError("Model is conformation-aware, but apo_list was not provided.")
+    if return_pdb==False and refine:
+        raise ValueError("Cannot return a protein object and refine at the same time. To run refinement, output format must be a PDB file (return_pdb==True).")
 
     if model.plm_model is not None:
         model.plm_model = model.plm_model.to(device)
@@ -170,11 +181,14 @@ def batch_inference(
         fv_heavy_batch = fv_heavy_list[i:i+batch_size]
         fv_light_batch = fv_light_list[i:i+batch_size] if fv_light_list else None
         with torch.no_grad():
-            pdb_strings = model.predict_batch(
-                fv_heavy_batch, fv_light_batch, device=device, apo_list=apo_list
+            pdb_strings_or_proteins = model.predict_batch(
+                fv_heavy_batch, fv_light_batch, device=device, pdb_string=return_pdb, apo_list=apo_list
             )
-
-            for pdb_string in pdb_strings:
+            if not return_pdb:
+                if logging:
+                    logger.warning("Inference complete. Returning a protein object.")
+                return pdb_strings_or_proteins
+            for pdb_string in pdb_strings_or_proteins:
                 output_file = output_dir / f"{output_names[name_idx]}.pdb"
                 process_file(pdb_string, output_file, refine, refine_checks)
                 result_files.append(output_file)

@@ -39,6 +39,22 @@ By default, structures are predicted in the holo conformation. To predict the ap
 To run a refinement step on the predicted structures, use the `--refine` option. Additional checks to fix cis-isomers and D-stereoisomers during refinement can be activated with `--refine-checks`.
  
 Instead of running Ibex, you can use `--abodybuilder3` to run inference with the [ABodyBuilder3](https://academic.oup.com/bioinformatics/article/40/10/btae576/7810444) model. 
+Below is a summary of all available options:
+```
+--abodybuilder3    Use the AbodyBuilder3 model instead of Ibex for inference. [default: no-abodybuilder3]                                           
+--fv-heavy         Sequence of the heavy chain.                                                                                                     
+--fv-light         Sequence of the light chain.                                                                                                     
+--csv              CSV file containing sequences of heavy and light chains. Columns should be named 'fv_heavy' and 'fv_light'. Output file names can
+                   be provided in a 'id' column.                                                                                                    
+--parquet          Parquet file containing sequences of heavy and light chains. Columns should be named 'fv_heavy' and 'fv_light'. Output file names
+                   can be provided in a 'id' column.                                                                                                
+--output           Output file for the PDB structure, or path to the output folder when a parquet or csv file is provided. [default: prediction.pdb]
+--batch-size       Batch size for inference if a parquet or csv file is provided. [default: 32]                                                     
+--save-all         Save all structures of the ensemble as output files. [default: no-save-all]                                                      
+--refine           Refine the output structures with openMM. [default: no-refine]                                                                   
+--refine-checks    Additional checks to fix cis-isomers and D-stereoisomers during refinement. [default: no-refine-checks]                          
+--apo              Predict structures in the apo conformation. [default: no-apo]                                                                    
+```
 
 To run Ibex programmatically, you can use
 ```python
