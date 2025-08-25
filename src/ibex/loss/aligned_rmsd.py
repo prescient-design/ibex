@@ -50,10 +50,225 @@ heavy_cdr_regions = {0, 1, 2}
 light_cdr_regions = {3, 4, 5}
 
 
-def apply_inverse_transformation(coords, R, t):
+def apply_transformation(coords, R, t):
     # Apply inverse rotation and translation
     coords_transformed = torch.bmm(R.transpose(-1, -2), (coords - t.unsqueeze(1)).transpose(-1, -2)).transpose(-1, -2)
     return coords_transformed
+
+
+def coordinates_to_dihedral(input: torch.Tensor) -> torch.Tensor:
+    """Compute dihedral angle from a set of four points.
+
+    Given an input tensor with shape (*, 4, 3) representing points (p1, p2, p3, p4)
+    compute the dihedral angle between the plane defined by (p1, p2, p3) and (p2, p3, p4).
+
+    Parameters
+    ----------
+    input: torch.Tensor
+        Shape (*, 4, 3)
+
+    Returns
+    -------
+    torsion: torch.Tensor
+        Shape (*,)
+    """
+    assert input.ndim >= 3
+    assert input.shape[-2] == 4
+    assert input.shape[-1] == 3
+
+    # difference vectors: [a = p2 - p1, b = p3 - p2, c = p4 - p3]
+    delta = input[..., 1:, :] - input[..., :-1, :]
+    a, b, c = torch.unbind(delta, dim=-2)
+
+    # torsion angle is angle from axb to bxc counterclockwise around b
+    # see https://www.math.fsu.edu/~quine/MB_10/6_torsion.pdf
+
+    axb = torch.cross(a, b, dim=-1)
+    bxc = torch.cross(b, c, dim=-1)
+
+    # orthogonal basis in plane perpendicular to b
+    # NOTE v1 and v2 are not unit but have the same magnitude
+    v1 = axb
+    v2 = torch.cross(torch.nn.functional.normalize(b, dim=-1), axb, dim=-1)
+
+    x = torch.sum(bxc * v1, dim=-1)
+    y = torch.sum(bxc * v2, dim=-1)
+    phi = torch.atan2(y, x)
+
+    return phi
+
+
+def _positions_to_phi(
+    positions: torch.Tensor,
+    mask: torch.Tensor,
+    residue_index: torch.Tensor,
+    chain_index: torch.Tensor,
+):
+    chain_boundary_mask = torch.cat(
+        [torch.zeros_like(chain_index[..., :1], dtype=torch.bool), torch.diff(chain_index, n=1, dim=-1) == 0], dim=-1
+    )
+
+    chain_break_mask = torch.cat(
+        [torch.zeros_like(residue_index[..., :1], dtype=torch.bool), torch.diff(residue_index, n=1, dim=-1) == 1],
+        dim=-1,
+    )
+
+    (input, mask) = (
+        torch.stack(
+            [
+                x[..., :-1, 2, :],  # C(i-1)
+                x[..., 1:, 0, :],  # N(i)
+                x[..., 1:, 1, :],  # CA(i)
+                x[..., 1:, 2, :],  # C(i)
+            ],
+            dim=-2,
+        )
+        for x in (positions, mask)
+    )  # [..., L, 4, 3]
+
+    mask = mask.all(dim=-1).all(dim=-1)  # [..., L]
+
+    angles = coordinates_to_dihedral(input)
+    nan_tensor = torch.full_like(angles[..., :1], float("nan"))
+    false_tensor = torch.zeros_like(mask[..., :1])
+
+    angles = torch.cat([nan_tensor, angles], dim=-1)
+    mask = torch.cat([false_tensor, mask], dim=-1)
+    mask = mask & chain_boundary_mask & chain_break_mask
+
+    return angles, mask
+
+
+def _positions_to_psi(
+    positions: torch.Tensor,
+    mask: torch.Tensor,
+    residue_index: torch.Tensor,
+    chain_index: torch.Tensor,
+):
+    chain_boundary_mask = torch.cat(
+        [torch.diff(chain_index, n=1, dim=-1) == 0, torch.zeros_like(chain_index[..., :1], dtype=torch.bool)], dim=-1
+    )
+
+    chain_break_mask = torch.cat(
+        [torch.diff(residue_index, n=1, dim=-1) == 1, torch.zeros_like(residue_index[..., :1], dtype=torch.bool)],
+        dim=-1,
+    )
+
+    (input, mask) = (
+        torch.stack(
+            [
+                x[..., :-1, 0, :],  # N(i)
+                x[..., :-1, 1, :],  # CA(i)
+                x[..., :-1, 2, :],  # C(i)
+                x[..., 1:, 0, :],  # N(i+1)
+            ],
+            dim=-2,
+        )
+        for x in (positions, mask)
+    )  # [..., L, 4, 3]
+
+    mask = mask.all(dim=-1).all(dim=-1)  # [..., L]
+
+    angles = coordinates_to_dihedral(input)
+    nan_tensor = torch.full_like(angles[..., :1], float("nan"))
+    false_tensor = torch.zeros_like(mask[..., :1])
+
+    angles = torch.cat([angles, nan_tensor], dim=-1)
+    mask = torch.cat([mask, false_tensor], dim=-1)
+    mask = mask & chain_boundary_mask & chain_break_mask
+
+    return angles, mask
+
+
+def _positions_to_omega(
+    positions: torch.Tensor,
+    mask: torch.Tensor,
+    residue_index: torch.Tensor,
+    chain_index: torch.Tensor,
+):
+    chain_boundary_mask = torch.cat(
+        [torch.diff(chain_index, n=1, dim=-1) == 0, torch.zeros_like(chain_index[..., :1], dtype=torch.bool)], dim=-1
+    )
+
+    chain_break_mask = torch.cat(
+        [torch.diff(residue_index, n=1, dim=-1) == 1, torch.zeros_like(residue_index[..., :1], dtype=torch.bool)],
+        dim=-1,
+    )
+
+    (input, mask) = (
+        torch.stack(
+            [
+                x[..., :-1, 1, :],  # CA(i)
+                x[..., :-1, 2, :],  # C(i)
+                x[..., 1:, 0, :],  # N(i+1)
+                x[..., 1:, 1, :],  # CA(i+1)
+            ],
+            dim=-2,
+        )
+        for x in (positions, mask)
+    )  # [..., L, 4, 3]
+
+    mask = mask.all(dim=-1).all(dim=-1)  # [..., L]
+
+    angles = coordinates_to_dihedral(input)
+    nan_tensor = torch.full_like(angles[..., :1], float("nan"))
+    false_tensor = torch.zeros_like(mask[..., :1])
+
+    angles = torch.cat([angles, nan_tensor], dim=-1)
+    mask = torch.cat([mask, false_tensor], dim=-1)
+    mask = mask & chain_boundary_mask & chain_break_mask
+
+    return angles, mask
+
+
+def positions_to_backbone_dihedrals(
+    positions: torch.Tensor, mask: torch.Tensor, residue_index: torch.Tensor | None = None, chain_index: torch.Tensor | None = None
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Compute Backbone dihedral angles (phi, psi, omega) from the atom-wise coordinates.
+
+    Parameters
+    ----------
+    positions: Tensor
+        Shape (..., L, 37, 3) tensor of the atom-wise coordinates
+    mask: BoolTensor
+        Shape (..., L, 37) boolean tensor indicating which atoms are present
+    residue_index: Tensor | None = None
+        Optional shape (..., L) tensor specifying the index of each residue along its chain.
+        If supplied this is used to mask dihedrals that cross a chain break.
+    chain_index: Tensor | None = None
+        Optional shape (..., L) tensor specifying the chain index of each residue.
+        If supplied this is used to mask dihedrals that cross a chain boundary.
+
+    where `NAW` is the number of atoms in the atom wide representation.
+
+    Returns
+    -------
+    dihedrals: Tensor
+        Shape (..., L, 3) tensor of the dihedral angles (phi, psi, omega)
+    dihedrals_mask: BoolTensor
+        Shape (..., L, 3) boolean tensor indicating which dihedrals are present
+    """
+    assert positions.ndim >= 3
+    L = positions.shape[-3]
+    device = positions.device
+
+    if residue_index is None:
+        residue_index = torch.arange(L).expand(*positions.shape[:-3], -1)  # [..., L]
+        residue_index = residue_index.to(device)
+
+    if chain_index is None:
+        chain_index = torch.zeros_like(positions[..., :, 0, 0], dtype=torch.int64)  # [..., L]
+        chain_index = chain_index.to(device)
+
+    mask = mask.unsqueeze(-1).expand(*mask.shape,3)
+    phi, phi_mask = _positions_to_phi(positions, mask, residue_index=residue_index, chain_index=chain_index)
+    psi, psi_mask = _positions_to_psi(positions, mask, residue_index=residue_index, chain_index=chain_index)
+    omega, omega_mask = _positions_to_omega(positions, mask, residue_index=residue_index, chain_index=chain_index)
+
+    dihedrals = torch.stack([phi, psi, omega], dim=-1)
+    dihedrals_mask = torch.stack([phi_mask, psi_mask, omega_mask], dim=-1)
+
+    return dihedrals, dihedrals_mask
 
 
 def rmsd_summary_calculation(
@@ -78,11 +293,6 @@ def rmsd_summary_calculation(
         dict[str, torch.Tensor]: RMSD values for each region and chain
     """
     results = {}
-
-    def apply_transformation(coords, R, t):
-        # Apply inverse rotation and translation
-        coords_transformed = torch.bmm(R.transpose(-1, -2), (coords - t.unsqueeze(1)).transpose(-1, -2)).transpose(-1, -2)
-        return coords_transformed
 
     # Align and compute RMSD for heavy chain regions
     heavy_chain_mask = chain_mask == 1

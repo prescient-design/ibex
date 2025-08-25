@@ -68,6 +68,7 @@ def main(
     elif csv or parquet:
         if save_all:
             logger.warning("save_all was set to True, but ensemble output is not implemented for batched inference. Setting save_all to False.")
+            save_all=False
         if output==Path("prediction.pdb"):
             # overwrite default for batch inference
             output = Path("predictions")

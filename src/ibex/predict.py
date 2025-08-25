@@ -125,7 +125,7 @@ def inference(
         pdb_string_or_protein = model.predict(fv_heavy, fv_light, device=device, ensemble=save_all, pdb_string=return_pdb, apo=apo)
         if not return_pdb:
             if logging:
-                logger.warning("Inference complete. Returning a protein object.")
+                logger.info("Inference complete. Returning a protein object.")
                 return pdb_string_or_protein
         if save_all:
             ensemble_files = []
