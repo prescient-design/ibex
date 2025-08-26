@@ -126,7 +126,7 @@ def inference(
         if not return_pdb:
             if logging:
                 logger.info("Inference complete. Returning a protein object.")
-                return pdb_string_or_protein
+            return pdb_string_or_protein
         if save_all:
             ensemble_files = []
             for i, pdb_string_current in enumerate(pdb_string_or_protein):
