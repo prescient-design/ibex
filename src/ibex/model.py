@@ -24,7 +24,7 @@ from esm.sdk.api import ESMProtein, LogitsConfig
 
 from ibex.dataloader import ABDataset, collate_fn, string_to_input, sequence_collate_fn
 from ibex.loss import IbexLoss
-from ibex.utils import output_to_pdb, add_atom37_to_output, output_to_protein
+from ibex.utils import output_to_pdb, add_atom37_to_output, output_to_protein, ENSEMBLE_MODELS, checkpoint_path
 from ibex.openfold.model import StructureModule
 
 class IbexDataModule(pl.LightningDataModule):
@@ -361,6 +361,18 @@ class Ibex(pl.LightningModule):
             model.load_state_dict(state_dict)
 
         return cls(model_config, loss_config, optim_config, conformation_aware=conformation_aware, ensemble=True, models=models, use_plm=init_plm, init_plm=init_plm)
+
+    @classmethod
+    def from_pretrained(cls, model="ibex", map_location=None, cache_dir=None):
+        ckpt = checkpoint_path(model, cache_dir=cache_dir)
+
+        if model in ENSEMBLE_MODELS:
+            ibex_model = Ibex.load_from_ensemble_checkpoint(ckpt, map_location=map_location)
+        else:
+            ibex_model = Ibex.load_from_checkpoint(ckpt, map_location=map_location)
+            if ibex_model.plm_model is not None:
+                ibex_model.set_plm()
+        return ibex_model
 
     def training_step(self, batch, batch_idx):
         stage=f"_{self.stage}" if self.stage else ""

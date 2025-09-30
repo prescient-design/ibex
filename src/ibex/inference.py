@@ -17,11 +17,11 @@ from pathlib import Path
 
 import pandas as pd
 from loguru import logger
-from tqdm import tqdm
 import typer
 
 from ibex.model import Ibex
-from ibex.predict import MODEL_CHECKPOINTS, ENSEMBLE_MODELS, checkpoint_path, inference, batch_inference
+from ibex.predict import inference, batch_inference
+from ibex.utils import MODEL_CHECKPOINTS, ENSEMBLE_MODELS, checkpoint_path
 
 warnings.filterwarnings("ignore")
 
@@ -80,6 +80,7 @@ def main(
             parquet = Path(parquet)
             logger.info(f"Performing inference on sequences from {parquet=}")
             df = pd.read_parquet(parquet)
+        df['fv_light'] = df['fv_light'].fillna('')
         fv_heavy_list = df["fv_heavy"].tolist()
         fv_light_list = df["fv_light"].tolist()
         apo_list = None
