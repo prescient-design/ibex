@@ -59,7 +59,7 @@ Below is a summary of all available options:
 To run Ibex programmatically, you can use
 ```python
 from ibex import Ibex, inference
-ibex_model = Ibex.load_from_pretrained("ibex") # or "abodybuilder3"
+ibex_model = Ibex.from_pretrained("ibex") # or "abodybuilder3"
 inference(ibex_model, fv_heavy, fv_light, "prediction.pdb")
 ```
 to predict structures for multiple sequence pairs, `batch_inference` is recommended instead of `inference`.

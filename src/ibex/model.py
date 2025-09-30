@@ -363,7 +363,7 @@ class Ibex(pl.LightningModule):
         return cls(model_config, loss_config, optim_config, conformation_aware=conformation_aware, ensemble=True, models=models, use_plm=init_plm, init_plm=init_plm)
 
     @classmethod
-    def load_from_pretrained(cls, model="ibex", map_location=None, cache_dir=None):
+    def from_pretrained(cls, model="ibex", map_location=None, cache_dir=None):
         ckpt = checkpoint_path(model, cache_dir=cache_dir)
 
         if model in ENSEMBLE_MODELS:
