@@ -32,7 +32,7 @@ You can provide a csv (with the `--csv` argument) or a parquet file (with the `-
 ```bash
 ibex --csv sequences.csv --output predictions
 ```
-where `sequences.csv` should contain a `fv_heavy` and `fv_light` column with heavy and light chain sequences, and optionally an `id` column with a string that will be used as part of the output PDB    filenames.
+where `sequences.csv` should contain a `fv_heavy` and `fv_light` column with heavy and light chain sequences, and optionally an `id` column with a string that will be used as part of the output PDB filenames.
 
 By default, structures are predicted in the holo conformation. To predict the apo state, use the `--apo` flag.
 
