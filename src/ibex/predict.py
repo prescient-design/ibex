@@ -12,76 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import requests
-import hashlib
+
 from pathlib import Path
 from typing import Optional
 import torch
-from torch.utils.data import DataLoader
-from loguru import logger
 import tempfile
 from tqdm import tqdm
+from loguru import logger
 
 from ibex.model import Ibex, EnsembleStructureModule
 from ibex.refine import refine_file
-
-MODEL_CHECKPOINTS = {
-    "ibex": "https://zenodo.org/records/15866556/files/ibex_v1.ckpt",
-    "abodybuilder3": "https://zenodo.org/records/15866556/files/abb3.ckpt",
-}
-ENSEMBLE_MODELS = ["ibex"]
-
-def download_from_url(url, local_path):
-    """Downloads a file from a URL with a progress bar."""
-    try:
-        with requests.get(url, stream=True) as r:
-            r.raise_for_status()
-            total_size_in_bytes = int(r.headers.get('content-length', 0))
-            block_size = 1024  # 1 Kibibyte
-
-            with tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True, desc=f"Downloading {os.path.basename(local_path)}") as progress_bar:
-                with open(local_path, 'wb') as f:
-                    for chunk in r.iter_content(block_size):
-                        progress_bar.update(len(chunk))
-                        f.write(chunk)
-            
-            if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
-                raise IOError("ERROR: Something went wrong during download")
-                
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Failed to download {url}: {e}")
-        # Clean up partially downloaded file
-        if os.path.exists(local_path):
-            os.remove(local_path)
-        raise
-
-def get_checkpoint_path(checkpoint_url, cache_dir=None):
-    """Generates a unique local path for a given URL."""
-    cache_dir = cache_dir or os.path.join(Path.home(), ".cache/ibex")
-    os.makedirs(cache_dir, exist_ok=True)
-    url_filename = os.path.basename(checkpoint_url)
-    url_hash = hashlib.md5(checkpoint_url.encode()).hexdigest()[:8]
-    filename = f"{url_hash}_{url_filename}"
-    return os.path.join(cache_dir, filename)
-
-
-def checkpoint_path(model_name, cache_dir=None):
-    """
-    Ensures the model checkpoint exists locally, downloading it if necessary.
-    """
-    if model_name not in MODEL_CHECKPOINTS:
-        raise ValueError(f"Invalid model name: {model_name}")
-
-    checkpoint_url = MODEL_CHECKPOINTS[model_name]
-    local_path = get_checkpoint_path(checkpoint_url, cache_dir)
-
-    if not os.path.exists(local_path):
-        logger.info(f"Downloading checkpoint from {checkpoint_url} to {local_path}")
-        # Call the new download function
-        download_from_url(checkpoint_url, local_path)
-        
-    return local_path
 
 
 def process_file(pdb_string, output_file, refine, refine_checks=False):

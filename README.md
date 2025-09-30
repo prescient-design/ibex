@@ -32,7 +32,7 @@ You can provide a csv (with the `--csv` argument) or a parquet file (with the `-
 ```bash
 ibex --csv sequences.csv --output predictions
 ```
-where `sequences.csv` should contain a `fv_heavy` and `fv_light` column with heavy and light chain sequences, and optionally an `id` column with a string that will be used as part of the output PDB filenames.
+where `sequences.csv` should contain a `fv_heavy` and `fv_light` column with heavy and light chain sequences, and optionally an `id` column with a string that will be used as part of the output PDB    filenames.
 
 By default, structures are predicted in the holo conformation. To predict the apo state, use the `--apo` flag.
 
@@ -58,9 +58,8 @@ Below is a summary of all available options:
 
 To run Ibex programmatically, you can use
 ```python
-from ibex import Ibex, checkpoint_path, inference
-ckpt = checkpoint_path("ibex")
-ibex_model = Ibex.load_from_ensemble_checkpoint(ckpt)
+from ibex import Ibex, inference
+ibex_model = Ibex.load_from_pretrained("ibex") # or "abodybuilder3"
 inference(ibex_model, fv_heavy, fv_light, "prediction.pdb")
 ```
 to predict structures for multiple sequence pairs, `batch_inference` is recommended instead of `inference`.
