@@ -2,7 +2,7 @@
 
 # Ibex 🐐
 
-[Ibex](https://arxiv.org/abs/2507.09054) is a lightweight antibody and TCR structure prediction model.
+[Ibex](https://www.tandfonline.com/doi/full/10.1080/19420862.2025.2602217) is a lightweight antibody and TCR structure prediction model.
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/prescient-design/ibex/refs/heads/main/docs/assets/ibex.png" width=400px>
@@ -82,14 +82,19 @@ Ibex uses as input representation embeddings from ESMC 300M, which is licensed u
 When using Ibex in your work, please cite the following paper
 
 ```bibtex
-@misc{ibex,
-      title={Conformation-Aware Structure Prediction of Antigen-Recognizing Immune Proteins},
-      author={Frédéric A. Dreyer and Jan Ludwiczak and Karolis Martinkus and Brennan Abanades and Robert G. Alberstein and Pan Kessel and Pranav Rao and Jae Hyeon Lee and Richard Bonneau and Andrew M. Watkins and Franziska Seeger},
-      year={2025},
-      eprint={2507.09054},
-      archivePrefix={arXiv},
-      primaryClass={q-bio.BM},
-      url={https://arxiv.org/abs/2507.09054},
+@article{ibex,
+    author = {Frédéric A. Dreyer and Jan Ludwiczak and Karolis Martinkus and Brennan Abanades and Robert G. Alberstein and Pan Kessel and Pranav Rao and Jae Hyeon Lee and Richard Bonneau and Andrew M. Watkins and Franziska Seeger},
+    title = {Conformation-aware structure prediction of antigen-recognizing immune proteins},
+    journal = {mAbs},
+    volume = {18},
+    number = {1},
+    pages = {2602217},
+    year = {2026},
+    publisher = {Taylor \& Francis},
+    doi = {10.1080/19420862.2025.2602217},
+    note ={PMID: 41378904},
+    URL = {https://doi.org/10.1080/19420862.2025.2602217},
+    eprint = {https://doi.org/10.1080/19420862.2025.2602217}
 }
 ```
 
